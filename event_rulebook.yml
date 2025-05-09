@@ -1,0 +1,24 @@
+---
+- name: Hello Events
+  hosts: localhost
+  sources:
+    - ansible.eda.kafka:
+        host: "<KAFKA_BROKER_VM_ADDRESS>"
+        port: "9092"
+        topic: "nd-events"
+        # group_id: "test"
+        offset: "earliest" # prints all events from the beginning
+  rules:
+    - name: Log events
+      condition: event.meta is defined and event.body.category == "COMPLIANCE"
+      action:
+      #  Use 3 space indentation for the action block and msg
+      #  Debug is used to print the event received from Kafka
+        #  debug:
+        #     msg:
+        #        - "Metadata: {{ event.meta }}"
+        #       #  - "Metadata: {{ event.source }}"
+        #       #  - "Message Value: {{ event }}"
+        #        - "Event description: {{ event.body.category}}"
+         run_playbook:
+            name: bd_arp_flooding.yml  # ansible.eda.hello  # bd_arp_flooding.yml

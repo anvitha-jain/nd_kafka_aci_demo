@@ -1,0 +1,34 @@
+# Test code for the ACI modules
+# This playbook is used to test the ACI modules in Ansible
+# It queries the tenant and prints the result
+---
+
+- name: Basic Ansible Debug Example
+  hosts: aci
+  gather_facts: false
+  environment:
+    http_proxy: http://proxy.esl.cisco.com:80
+    https_proxy: http://proxy.esl.cisco.com:80
+  tasks:
+    - name: Print a simple message
+      debug:
+        msg: "Hello World! Welcome to Ansible Debug Module. {{ aci_hostname }}"
+
+    # Print Ansible EDA Event received from Kafka and sent via rulebook.
+    - name: DEBUG Message
+      debug:
+        var: ansible_eda.event.body.anomalyObjectsList
+
+    - name: Query Tenant
+      cisco.aci.aci_tenant:
+        host: "{{ aci_hostname }}"
+        username: "{{ aci_username }}"
+        password: "{{ aci_password }}"
+        validate_certs: false
+        name: anvitha_nd_kafka
+        state: query
+      register: query_tenant
+
+    - name: Print Query Tenant Result
+      debug:
+        var: query_tenant

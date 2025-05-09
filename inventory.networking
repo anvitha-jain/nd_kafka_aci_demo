@@ -1,0 +1,10 @@
+[aci]
+localhost
+
+[aci:vars]
+ansible_connection=local
+aci_hostname=<aci_host>
+aci_username=admin
+aci_password="my_pass"
+ansible_host=<aci_host>
+ansible_network_os=cisco.aci.aci
