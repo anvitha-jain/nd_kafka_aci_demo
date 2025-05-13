@@ -2,7 +2,7 @@ from kafka import KafkaConsumer
 from json import loads, dumps, JSONDecodeError
 
 # Configuration
-KAFKA_BROKER = '<KAFKA_BROKER_VM_ADDRESS>:9092'  # Replace with your Kafka broker address
+KAFKA_BROKER = '172.31.218.215:9092'  # Replace with your Kafka broker address
 KAFKA_TOPIC = 'nd-events'       # Replace with your Kafka topic
 KAFKA_GROUP_ID = 'my-group'
 

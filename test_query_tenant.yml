@@ -1,4 +1,5 @@
-# Test code for the ACI modules
+# Test code to verify if rulebook is working
+# To test this code change the name of run_playbook parameter in event_rulebook.yml to test_query_tenant.yml
 # This playbook is used to test the ACI modules in Ansible
 # It queries the tenant and prints the result
 ---
