@@ -1,0 +1,72 @@
+# Test code for the ACI modules
+# # Basic debug example
+
+---
+
+- name: Basic Ansible Debug Example
+  hosts: aci
+  gather_facts: false
+  environment:
+    http_proxy: http://proxy.esl.cisco.com:80
+    https_proxy: http://proxy.esl.cisco.com:80
+  tasks:
+    - name: Print a simple message
+      debug:
+        msg: "Hello World! Welcome to Ansible Debug Module. {{ aci_hostname }}"
+
+    - name: Set vars
+      ansible.builtin.set_fact:
+        aci_info: &aci_info
+          host: "{{ aci_hostname }}"
+          username: "{{ aci_username }}"
+          password: "{{ aci_password }}"
+          validate_certs: "{{ aci_validate_certs | default(false) }}"
+
+    - name: Query Tenant
+      cisco.aci.aci_tenant:
+        <<: *aci_info
+        name: anvitha_nd_kafka
+        state: query
+      register: query_tenant
+
+    - name: debug query_tenant
+      debug:
+        var: query_tenant
+
+    # # loop through ansible_eda.event.body.anomalyObjectsList.0 and check if objectType is bd and add the item into bd_names list
+    - name: Collect all BD names into a list
+      ansible.builtin.set_fact:
+        bd_names: "{{ (bd_names | default([])) + [item.name] }}"
+      loop: "{{ ansible_eda.event.body.anomalyObjectsList }}"
+      when: item.objectType == 'bd'
+
+    - name: Show all BD names in Kafka Data stream
+      ansible.builtin.debug:
+        var: bd_names
+
+    - name: Query all Bridge Domains in bd_names
+      cisco.aci.aci_bd:
+        <<: *aci_info
+        tenant: anvitha_nd_kafka
+        bd: "{{ item }}"
+        state: query
+      loop: "{{ bd_names }}"
+      register: query_bd
+
+    - name: Debug query_bd
+      debug:
+        var: query_bd
+
+    - name: Update ARP flooding to false
+      cisco.aci.aci_bd:
+        <<: *aci_info
+        tenant: anvitha_nd_kafka
+        bd: "{{ item }}"
+        arp_flooding: "no"
+        state: present
+      loop: "{{ bd_names }}"
+      register: update_bd
+
+    - name: Debug update_bd
+      debug:
+        var: update_bd

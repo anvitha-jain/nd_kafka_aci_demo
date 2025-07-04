@@ -1,0 +1,24 @@
+---
+- name: Monitor ACI Events
+  hosts: localhost
+  sources:
+    - ansible.eda.kafka:
+        host: "172.31.218.215"
+        port: "9092"
+        topic: "nd-events"
+        # group_id: "test"
+        offset: "earliest" # prints all events from the beginning
+  rules:
+    - name: Log events
+      condition: event.meta is defined and event.body.category == "COMPLIANCE"
+      action:
+      #  Use 3 space indentation for the action block and msg
+      #  Debug is used to print the event received from Kafka
+        #  debug:
+        #     msg:
+        #        - "Metadata: {{ event.meta }}"
+        #       #  - "Metadata: {{ event.source }}"
+        #       #  - "Message Value: {{ event }}"
+        #        - "Event description: {{ event.body.category}}"
+         run_playbook:
+            name: eda_aci_bd_arp_flooding.yml
