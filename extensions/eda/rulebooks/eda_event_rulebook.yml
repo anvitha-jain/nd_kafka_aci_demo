@@ -11,7 +11,7 @@
   rules:
     - name: Log events
       condition: event.meta is defined and event.body.category == "COMPLIANCE"
-      action:
+      actions:
       #  Use 3 space indentation for the action block and msg
       #  Debug is used to print the event received from Kafka
         #  debug:
