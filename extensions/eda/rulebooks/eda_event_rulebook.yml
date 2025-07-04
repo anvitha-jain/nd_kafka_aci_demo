@@ -20,5 +20,8 @@
         #       #  - "Metadata: {{ event.source }}"
         #       #  - "Message Value: {{ event }}"
         #        - "Event description: {{ event.body.category}}"
-         run_playbook:
-            name: eda_aci_bd_arp_flooding.yml
+        #  run_playbook:
+        #     name: eda_aci_bd_arp_flooding.yml
+        - run_job_template:
+            name: "query_playbook_template"
+            organization: "Default"
