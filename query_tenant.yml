@@ -7,19 +7,15 @@
 - name: Basic Ansible Debug Example
   hosts: aci
   gather_facts: false
-  environment:
-    http_proxy: http://proxy.esl.cisco.com:80
-    https_proxy: http://proxy.esl.cisco.com:80
+  # environment:
+  #   http_proxy: http://proxy.esl.cisco.com:80
+  #   https_proxy: http://proxy.esl.cisco.com:80
   tasks:
     - name: Print a simple message
       debug:
-        msg: "Hello World! Welcome to Ansible Debug Module. {{ aci_hostname }}"
+        msg: "Querying Tenant {{ aci_hostname }}"
 
-    # Print Ansible EDA Event received from Kafka and sent via rulebook.
-    - name: DEBUG Message
-      debug:
-        var: ansible_eda.event.body.anomalyObjectsList
-
+  #  Query Tenant in ACI
     - name: Query Tenant
       cisco.aci.aci_tenant:
         host: "{{ aci_hostname }}"
