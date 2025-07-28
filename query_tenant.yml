@@ -22,7 +22,7 @@
         username: "{{ aci_username }}"
         password: "{{ aci_password }}"
         validate_certs: false
-        name: anvitha_nd_kafka
+        name: eda_tenant
         state: query
       register: query_tenant
 

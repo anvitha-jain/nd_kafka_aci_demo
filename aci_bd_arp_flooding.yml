@@ -6,9 +6,9 @@
 - name: Basic Ansible Debug Example
   hosts: aci
   gather_facts: false
-  environment:
-    http_proxy: http://proxy.esl.cisco.com:80
-    https_proxy: http://proxy.esl.cisco.com:80
+  # environment:
+  #   http_proxy: http://proxy.esl.cisco.com:80
+  #   https_proxy: http://proxy.esl.cisco.com:80
   tasks:
     - name: Print a simple message
       debug:
@@ -25,7 +25,7 @@
     - name: Query Tenant
       cisco.aci.aci_tenant:
         <<: *aci_info
-        name: anvitha_nd_kafka
+        name: eda_tenant
         state: query
       register: query_tenant
 
@@ -47,7 +47,7 @@
     - name: Query all Bridge Domains in bd_names
       cisco.aci.aci_bd:
         <<: *aci_info
-        tenant: anvitha_nd_kafka
+        tenant: eda_tenant
         bd: "{{ item }}"
         state: query
       loop: "{{ bd_names }}"
@@ -60,7 +60,7 @@
     - name: Update ARP flooding to false
       cisco.aci.aci_bd:
         <<: *aci_info
-        tenant: anvitha_nd_kafka
+        tenant: eda_tenant
         bd: "{{ item }}"
         arp_flooding: "no"
         state: present

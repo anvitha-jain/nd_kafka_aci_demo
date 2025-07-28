@@ -1,0 +1,17 @@
+---
+- name: Monitor ACI Events
+  hosts: localhost
+  sources:
+    - ansible.eda.kafka:
+        host: "172.31.218.215"
+        port: "9092"
+        topic: "nd-events"
+        offset: "latest" # prints all events from the beginning
+  rules:
+    - name: Log events
+      condition: event.meta is defined and event.body.category == "COMPLIANCE"
+      actions:
+        - run_job_template:
+            name: "aci_epg_template"
+            organization: "Default"
+

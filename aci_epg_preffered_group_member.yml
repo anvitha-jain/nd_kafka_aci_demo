@@ -1,0 +1,89 @@
+# Test code for the ACI modules
+# # A "preferred group" setting might be represented by "include" or "exclude" to determine if an End Point Group (EPG) can communicate without contracts.
+
+---
+
+- name: Ansible EPG Preferred Member Group Example
+  hosts: aci
+  gather_facts: false
+  # vars:
+  #   _event_payload: "{{ event_payload }}"
+
+  # vars_prompt:
+  #   - name: payload
+  #     prompt: ""
+  #     private: false
+  
+  tasks:
+    - name: Print a simple message
+      debug:
+        msg:
+          - "Hello World! Welcome to Ansible EPG Preferred Member Group Module. {{ aci_hostname }}"
+
+    # - name: Debug event received
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "{{ _event_payload }} "
+
+    # - name: Debug event received
+    #   debug:
+    #     var: ansible_eda
+
+
+    - name: Set vars
+      ansible.builtin.set_fact:
+        aci_info: &aci_info
+          host: "{{ aci_hostname }}"
+          username: "{{ aci_username }}"
+          password: "{{ aci_password }}"
+          validate_certs: "{{ aci_validate_certs | default(false) }}"
+
+    - name: Query Tenant
+      cisco.aci.aci_tenant:
+        <<: *aci_info
+        name: eda_tenant
+        state: query
+      register: query_tenant
+
+    - name: debug query_tenant
+      debug:
+        var: query_tenant
+
+    # # loop through ansible_eda.event.body.anomalyObjectsList.0 and check if objectType is epg and add the item into epg_names list
+    - name: Collect all EPG names into a list
+      ansible.builtin.set_fact:
+        epg_names: "{{ (epg_names | default([])) + [item.name] }}"
+      loop: "{{ ansible_eda.event.body.anomalyObjectsList }}"
+      when: item.objectType == 'epg'
+
+    - name: Show all EPG names in Kafka Data stream
+      ansible.builtin.debug:
+        var: epg_names
+
+    - name: Query all Endpoint Groups in epg_names
+      cisco.aci.aci_epg:
+        <<: *aci_info
+        tenant: eda_tenant
+        epg: "{{ item }}"
+        state: query
+      loop: "{{ epg_names }}"
+      register: query_epg
+
+    - name: Debug query_epg
+      debug:
+        var: query_epg
+
+    - name: Update preferred_group to false (exclude)
+      cisco.aci.aci_epg:
+        <<: *aci_info
+        tenant: eda_tenant
+        ap: eda_ap
+        epg: "{{ item }}"
+        preferred_group: false
+        state: present
+      loop: "{{ epg_names }}"
+      register: update_epg
+
+    - name: Debug update_epg
+      debug:
+        var: update_epg
