@@ -1,9 +1,10 @@
 # Test code for the ACI modules
-# # Basic debug example
+# # ARP Flooding in Bridge Domain (BD) can be enabled or disabled to control the flooding of ARP requests within the BD.
+# # Setting arp_flooding to "no" will disable ARP flooding, which can help reduce unnecessary broadcast traffic in certain network designs.
 
 ---
 
-- name: Basic Ansible Debug Example
+- name: Basic Ansible Bridge Domain ARP Flooding Example
   hosts: aci
   gather_facts: false
   # environment:

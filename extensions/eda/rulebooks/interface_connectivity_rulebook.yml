@@ -1,0 +1,20 @@
+---
+- name: Monitor ACI Interface Events
+  hosts: localhost
+  sources:
+    - ansible.eda.kafka:
+        host: "172.31.218.215"
+        port: "9092"
+        topic: "nd-events"
+        offset: "latest" # prints all events from the beginning
+  rules:
+    - name: Log events
+      condition: event.meta is defined and event.body.category == "CONNECTIVITY" and event.body.cleared == false
+      actions:
+        - run_job_template:
+            name: "interface_connectivity_anomaly"
+            organization: "Default"
+            # job_args:
+            #   extra_vars:
+            #       # Pass the entire event object as a new variable named 'eda_event'
+            #       eda_event: "{{ event.body }}"

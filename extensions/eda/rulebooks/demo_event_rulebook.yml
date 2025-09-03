@@ -1,0 +1,24 @@
+---
+
+- name: Monitor ACI Events for EDA
+  hosts: localhost
+  sources:
+    - ansible.eda.kafka:
+        host: "172.31.218.215"
+        port: "9092"
+        topic: "nd-events"
+        offset: "latest" # prints all events from the latest
+  rules:
+    - name: Log Compliance events
+      condition: event.meta is defined and event.body.category == "COMPLIANCE"
+      actions:
+        - run_job_template:
+            name: "aci_bd_template"
+            organization: "Default"
+    - name: Log Connectivity events
+      condition: event.meta is defined and event.body.category == "CONNECTIVITY" and event.body.anomalyType == "INTERFACE_DOWN"
+      actions:
+        - run_job_template:
+            name: "interface_connectivity_anomaly"
+            organization: "Default"
+    

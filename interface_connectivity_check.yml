@@ -1,0 +1,99 @@
+# Test code for the ACI modules
+# # The aci_interface_blacklist module in the Cisco Ansible ACI collection is used to enable or disable physical interfaces on Cisco ACI fabrics.
+# # Setting the state to absent will ENABLE the interface (Interface operational port state UP).
+# # Setting the state to present will DISABLE the interface (Interface operational port state DOWN).
+
+
+---
+
+- name: Ansible Interface Preferred Member Group Example
+  hosts: aci
+  gather_facts: false
+
+  tasks:
+    - name: Print a simple message
+      debug:
+        msg:
+          - "Hello World! Welcome to Ansible Interface Preferred Member Group Module. {{ aci_hostname }}"
+
+    - name: Set vars
+      ansible.builtin.set_fact:
+        aci_info: &aci_info
+          host: "{{ aci_hostname }}"
+          username: "{{ aci_username }}"
+          password: "{{ aci_password }}"
+          validate_certs: "{{ aci_validate_certs | default(false) }}"
+
+    - name: Query All Interfaces
+      cisco.aci.aci_interface_blacklist:
+        <<: *aci_info
+        state: query
+      register: query_interfaces
+
+    - name: debug query_interfaces
+      debug:
+        var: query_interfaces
+
+    - name: Print ansible_eda message
+      debug:
+        msg:
+          - "ansible_eda is {{ ansible_eda }}."
+
+    - name: Debug cleared status
+      ansible.builtin.debug:
+        var: ansible_eda.event.body.cleared
+
+    - name: Debug anomalyType
+      ansible.builtin.debug:
+        var: ansible_eda.event.body.anomalyType
+
+    - name: Debug peerDeviceName
+      ansible.builtin.debug:
+        var: ansible_eda.event.body.customData.peerDeviceName
+      when: ansible_eda.event.body.customData is defined # Add this to prevent errors if customData is missing
+
+    - name: Debug peerInterfaceName
+      ansible.builtin.debug:
+        var: ansible_eda.event.body.customData.peerInterfaceName
+      when: ansible_eda.event.body.customData is defined # Add this to prevent errors if customData is missing
+
+
+    # # Read through ansible_eda.event.body.customData and check if peerDeviceName is leaf1 and peerInterfaceName Eth1/54
+    - name: Verify the interface details from Kafka Data stream
+      ansible.builtin.set_fact:
+        interface_name: "{{ ansible_eda.event.body.customData.peerInterfaceName | regex_replace('Eth', '') }}"
+      when:
+        - ansible_eda.event.body.cleared == false
+        - ansible_eda.event.body.anomalyType == 'INTERFACE_DOWN'
+        - ansible_eda.event.body.customData.peerDeviceName == 'leaf1'
+        - ansible_eda.event.body.customData.peerInterfaceName == 'Eth1/54'
+
+    - name: Show the Interface name in Kafka Data stream
+      ansible.builtin.debug:
+        var: interface_name
+
+    - name: Query an Interface from Kafka Data stream (Shows Interface status is DOWN)
+      cisco.aci.aci_interface_blacklist:
+        <<: *aci_info
+        pod_id: 1
+        node_id: 201
+        interface: "{{ interface_name }}"  # interface_name should be 1/54 for demo
+        state: query
+      register: query_interface_from_kafka
+
+    - name: debug query_interface_from_kafka
+      debug:
+        var: query_interface_from_kafka
+
+    - name: Update Interface by Enabling (Change Interface status to UP)
+      cisco.aci.aci_interface_blacklist:
+        <<: *aci_info
+        pod_id: 1
+        node_id: 201
+        interface: "{{ interface_name }}"  # interface_name should be 1/54 for demo
+        state: absent
+      register: update_interface
+
+    - name: Debug update_interface
+      debug:
+        var: update_interface
